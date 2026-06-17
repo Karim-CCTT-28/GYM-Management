@@ -5,14 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Subscriber extends Model
+class SubscriptionType extends Model
 {
-    protected $casts = [
-    'vector' => 'array'
-];
-    protected $fillable = ['name', 'phone' , 'vector'];
+    protected $fillable = ['duration', 'price' , 'duration_unit'];
 
-    public function subscriptions()
+    public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
     }

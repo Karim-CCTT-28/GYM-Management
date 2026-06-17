@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         //
+           $middleware->alias([
+        'user' => \App\Http\Middleware\CheckUserSession::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

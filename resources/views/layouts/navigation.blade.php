@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/face-api.min.js') }}"></script>
     <title>Gym Management</title>
 
     <style>
@@ -53,10 +55,11 @@
             padding: 5px;
         }
 
-        .yield-Subscribers ,.yield-Expenses{
+        .yield-Subscribers,
+        .yield-Expenses {
             display: flex;
             justify-content: center;
-            
+
         }
     </style>
 </head>

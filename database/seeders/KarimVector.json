@@ -1,17 +1,5 @@
-<?php
-
-namespace Database\Seeders;
-
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\SubscriptionType;
-use Illuminate\Support\Facades\Hash;
-
-class DatabaseSeeder extends Seeder
 {
-
-
-private $vector = [
+    "vector": [
         -0.05592276528477669,
         0.12295062094926834,
         -0.05395953729748726,
@@ -524,51 +512,5 @@ private $vector = [
         0.212235227227211,
         0.27679243683815,
         0.08792144805192947
-    ];
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public function run(): void
-    {
-        User::create([
-            'user_name' => 'Karim',
-            'role' => 'A',
-            'hashed_password' => Hash::make('123456'),
-            'vector' => $this->vector
-        ]);
-
-
-        $types = [
-            ['duration' => 1, 'duration_unit' => 'day', 'price' => 40],
-
-            ['duration' => 1, 'duration_unit' => 'month', 'price' => 250],
-            ['duration' => 2, 'duration_unit' => 'month', 'price' => 500],
-            ['duration' => 3, 'duration_unit' => 'month', 'price' => 700],
-            ['duration' => 6, 'duration_unit' => 'month', 'price' => 800],
-            ['duration' => 9, 'duration_unit' => 'month', 'price' => 900],
-            ['duration' => 12, 'duration_unit' => 'month', 'price' => 1000],
-        ];
-
-
-        foreach ($types as $type) {
-            SubscriptionType::create($type);
-        }
-        
-    }
-
-
-
-
-
-
+    ]
 }

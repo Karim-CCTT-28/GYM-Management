@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <script src="{{ asset('js/face-api.min.js') }}"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Management - Login</title>
 
@@ -63,7 +63,6 @@
             margin-top: 10px;
             padding: 12px;
             border: none;
-            background-color: black;
             color: white;
             cursor: pointer;
             border-radius: 3px;
@@ -88,6 +87,50 @@
         .container {
 
             /* display: none; */
+        }
+
+        button:active {
+            background-color: white;
+            color: black;
+        }
+
+        .camera-box {
+            position: relative;
+            width: 300px;
+            height: 225px;
+        }
+
+        .camera-box,
+        #video,
+        #canvas {
+
+            border-radius: 5px;
+        }
+
+        #video,
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 225px;
+        }
+
+        #captureBtn {
+            background-color: green;
+        }
+
+        #captureBtn:disabled {
+            background: red;
+            cursor: not-allowed;
+        }
+
+        #login {
+            background-color: black;
+        }
+
+        #loading {
+            display: none;
         }
     </style>
 </head>
@@ -115,7 +158,7 @@
 
 
 
-            <button type="submit">Login</button>
+            <button type="submit" id="login">Login</button>
 
         </form>
 
@@ -135,10 +178,10 @@
 
             <video id="video" autoplay playsinline width="300"></video>
 
-            <canvas id="canvas" style="display:none;"></canvas>
-
+            <canvas id="canvas"></canvas>
+            <p id="loading">Loading...</p>
         </div>
-        <button type="button" onclick="checkFace()">Login</button>
+        <button id="captureBtn" disabled>التقط</button>
     </div>
 </body>
 
@@ -148,6 +191,21 @@
 
 
 <script>
+    let faceDetected = false;
+    let detectorInterval = null;
+    const status = document.getElementById("status");
+    const captureBtn = document.getElementById("captureBtn");
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+
+    async function init() {
+// using cpu instad of gpu
+if (typeof faceapi !== 'undefined' && faceapi.tf) {
+            await faceapi.tf.setBackend('cpu');
+        }
+        await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+
+    }
 
     async function checkLoginData() {
 
@@ -175,14 +233,15 @@
 
         if (data.success) {
 
+            await init();
             startCamera();
 
         } else {
-            alert("Wrong username or password");
+            alert(data.message);
         }
 
         // console.log(data.message);
-        
+
     }
     async function loadUsers() {
 
@@ -205,8 +264,6 @@
 
     loadUsers();
 
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
 
     // Start the camera and show live video
     async function startCamera() {
@@ -219,49 +276,118 @@
 
         document.getElementsByClassName("container")[0].style = "display:none;"
         document.getElementsByClassName("face")[0].style = "display:block;"
+
+        video.addEventListener("play", () => {
+            checkFace();
+
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+        });
+    }
+
+    function checkFace() {
+        if (detectorInterval) {
+            clearInterval(detectorInterval);
+        }
+        detectorInterval = setInterval(async () => {
+
+            const detection = await faceapi.detectSingleFace(
+                video,
+                new faceapi.TinyFaceDetectorOptions()
+            );
+            const ctx = canvas.getContext("2d");
+
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+            if (detection) {
+
+                faceDetected = true;
+                captureBtn.disabled = false;
+
+
+
+                const box = detection.box;
+
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 3;
+
+                ctx.strokeRect(
+                    box.x,
+                    box.y,
+                    box.width,
+                    box.height
+                );
+
+            } else {
+
+                faceDetected = false;
+                captureBtn.disabled = true;
+            }
+
+        }, 200);
     }
 
 
-    async function checkFace() {
+    captureBtn.addEventListener("click", async () => {
 
-        let user = document.getElementById("userSelect").value;
-
-
+        if (!faceDetected) return;
 
 
-        //  auto photo
+        captureBtn.style = "display:none;";
+
+        video.style = "display:none;"
+        canvas.style = "display:none;"
+        flag = document.getElementById("loading");
+        flag.style = "display:block;"
+
+
+
+
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
         let ctx = canvas.getContext("2d");
-
-        // Draw the video at the top left of the canvas
         ctx.drawImage(video, 0, 0);
 
-        canvas.toBlob(async function (blob) {
+        const blob = await new Promise(resolve =>
+            canvas.toBlob(resolve, "image/jpeg")
+        );
 
-            let formData = new FormData();
+        let formData = new FormData();
 
-            formData.append("image", blob, "face.jpg");
-            formData.append("user", user);
-            formData.append("_token", "{{ csrf_token() }}");
-            let faceResponse = await fetch("/check-face", {
-                method: "POST",
-                body: formData
-            });
+        formData.append("image", blob, "face.jpg");
+        formData.append("_token", "{{ csrf_token() }}");
 
-            let faceData = await faceResponse.json();
+        const faceResponse = await fetch("/user-face", {
+            method: "POST",
+            body: formData
+        });
 
-            if (faceData.matched) {
-                alert("Login Success");
+        try {
+
+            const res = await faceResponse.json();
+
+
+
+            if (res.success) {
+                window.location.href = '/entranceGate'
+                clearInterval(detectorInterval);
+                video.srcObject
+                    .getTracks()
+                    .forEach(track => track.stop());
             } else {
-                alert("Face Not Match");
+                alert(res.message);
             }
+        } catch (error) {
+            flag.textContent = error.message;
+        }
 
-        }, "image/jpeg");
-
-    }
-
+    });
 
 
 </script>

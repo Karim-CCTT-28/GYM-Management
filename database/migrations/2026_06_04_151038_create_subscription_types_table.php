@@ -1,22 +1,30 @@
 <?php
 
+
+
+
+
+
+
+
+
+
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('subscription_types', function (Blueprint $table) {
             $table->id();
-            $table->string("user_name")->unique();
-            $table->string("Role");
-            $table->string("hashed_password");
-            $table->string("image");
+            $table->integer('duration');
+            $table->text('duration_unit');
+            $table->float('price');
             $table->timestamps();
         });
     }
@@ -26,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('subscription_types');
     }
 };

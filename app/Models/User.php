@@ -3,16 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Model
 {
-    protected $fillable = [
-        'user_name',
-        'hashed_password',
-        'image',
-        'Role'
+    protected $fillable = ['user_name', 'role', 'hashed_password' , 'vector'];
+
+    protected $casts = [
+        'vector' => 'array',
     ];
-
-
-    
+    public function sessionReports(): HasMany
+    {
+        return $this->hasMany(SessionReport::class);
+    }
 }

@@ -1,5 +1,3 @@
-<!-- resources/views/Subscribers/SubscriberShow.blade.php -->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -63,12 +61,13 @@
             background: black;
             color: white;
             padding: 12px;
-            text-align: left;
+            text-align: center;
         }
 
         td {
             padding: 12px;
             border-bottom: 1px solid #ddd;
+            text-align: center;
         }
 
         tr:hover {
@@ -146,7 +145,7 @@
                     {{ $s->created_at }}
                 </p>
 
-                <img src="{{ $s->image }}" alt="subscriber" id="subscriber">
+                <img src="{{ asset('storage/Subscribers/' . $s->id . '.jpg') }}" alt="subscriber" id="subscriber">
             </div>
 
             <a href="/subscribers" class="btn">
@@ -164,10 +163,12 @@
             <thead>
 
                 <tr>
-                    <th>ID</th>
+                    <!-- <th>ID</th> -->
                     <th>Start Date</th>
                     <th>End Date</th>
                     <th>Created At</th>
+                    <th>Created By</th>
+                    <th>Status</th>
                 </tr>
 
             </thead>
@@ -178,13 +179,23 @@
 
                     <tr>
 
-                        <td>{{ $sub->id }}</td>
+                        <!-- <td>{{ $sub->id }}</td> -->
 
                         <td>{{ $sub->start_date }}</td>
 
                         <td>{{ $sub->end_date }}</td>
 
                         <td>{{ $sub->created_at }}</td>
+
+                        <td>{{ $sub->created_by }}</td>
+
+                        <td>
+                           @if(now()->startOfDay()->lte(\Carbon\Carbon::parse($sub->end_date)->startOfDay()))
+                                <span style="color: green; font-weight: bold;">Active</span>
+                            @else
+                                <span style="color: red; font-weight: bold;">Disactive</span>
+                            @endif
+                        </td>
 
                     </tr>
 

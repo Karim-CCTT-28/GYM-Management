@@ -2,164 +2,256 @@
 
 @section("Report")
 
+<style>
+    .summary {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
 
+    .summary p {
+        margin: 8px 0;
+        font-size: 16px;
+        font-weight: bold;
+    }
 
+    .income { color: #198754; }
+    .expense { color: #dc3545; }
+    .balance { color: #0d6efd; font-size: 18px; }
 
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        margin-bottom: 25px;
+    }
 
-    <style>
-        .table-container {
-            width: 100%;
-            max-height: 500px;
-            overflow-x: auto;
-            overflow-y: auto;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
 
-        .Subscriptions,
-        .Expenses {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px;
-        }
+    th, td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
 
-        th,
-        td {
-            border-bottom: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
+    th {
+        background: #f1f3f5;
+    }
 
-        #expenses {
-            color: red;
-        }
+    .action-btn {
+        border: none;
+        padding: 10px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-bottom: 15px;
+    }
 
-        #pure {
-            color: green;
-        }
+    #water {
+        background: black;
+        color: white;
+    }
 
-        tfoot td {
-            font-weight: bold;
-            background-color: #f5f5f5;
-        }
+    .export {
+        position: fixed;
+        top: 50px;
+        right: 50px;
+        background: black;
+        color: white;
+    }
+</style>
 
-        .table-container p {
-            margin: 0;
-        }
+<button id="water" class="action-btn">
+    Set Water Balance
+</button>
 
-        .export {
-            border-radius: 5px;
-            position: fixed;
-            right: 50px;
-            top: 50px;
-            border: none;
-            background-color: black;
-            width: 100px;
-            height: 30px;
-            color: white;
-        }
-    </style>
+<div class="summary">
 
+    <p>
+        Water Balance :
+        <span id="water-balance">0</span>
+    </p>
 
-    <button id="water">Set Water Balance</button>
+    <p class="income">Total Subscription Revenue : 0</p>
+    <p class="expense">Total Expenses : 0</p>
+    <p class="balance">Final Balance : 0</p>
 
+</div>
 
+<hr>
 
-    <div class="info">
-        <p>Water Balance : <span id="water-balance">0</span></p>
-        <p>Total : 2030</p>
-        <p id="expenses">Expenses : 100</p>
-        <p id="pure">Pure Total : 1930</p>
+<div class="table-container">
+
+    <div class="section-title">
+        Subscription Records Total : <span>0</span>
     </div>
 
-    <hr>
-    <div class="table-container">
-        <p>Subscriptions</p>
-        <table class="Subscriptions">
+    <table>
+        <thead>
+            <tr>
+                <th>Member Name</th>
+                <th>Subscription Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-            <thead>
-                <tr>
+</div>
 
-                    <th>Name</th>
-                    <th>Subscriptions Type</th>
-                    <th>Price</th>
-                    <th>ID</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Karim Hamza</td>
-                    <td>3 years</td>
-                    <td>2000</td>
-                    <td>3089</td>
-                </tr>
-            </tbody>
+<hr>
 
-            <tfoot>
-                <tr>
-                    <td colspan="2"><strong>Total</strong></td>
-                    <td colspan="2"><strong>2000</strong></td>
-                </tr>
-            </tfoot>
-        </table>
+<div class="table-container">
+
+    <div class="section-title">
+        Expense Records Total : <span>0</span>
     </div>
 
-    <hr>
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Recipient</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-    <div class="table-container">
-        <p>Expenses</p>
+</div>
 
-        <table class="Expenses">
+<button class="action-btn export">
+    Export as PDF
+</button>
 
-            <thead>
-                <tr>
-                    <th>Clause</th>
-                    <th>Recipient</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
+<script>
 
-            <tbody>
-                <tr>
-                    <td>Fix the window</td>
-                    <td>Karim Hamza</td>
-                    <td>100</td>
-                </tr>
+    const waterBtn = document.getElementById("water");
+    const waterBalance = document.getElementById("water-balance");
 
+    waterBtn.addEventListener("click", function () {
 
-            </tbody>
+        let value;
 
-            <tfoot>
-                <tr>
-                    <td colspan="2"><strong>Total</strong></td>
-                    <td colspan="2"><strong>100</strong></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
+        do {
+            value = prompt("Enter Water Balance:");
+        }
+        while (
+            value !== null &&
+            (isNaN(value) || value.trim() === "")
+        );
+
+        if (value !== null) {
+            waterBalance.textContent = value;
+        }
+
+    });
 
 
+// =================================================
+loadReport()
 
+async function loadReport() {
 
+    const userName = "{{ session('user_name') }}";
 
-    <button class="export">Export as PDF</button>
+    const res = await fetch("/session-report", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+            user_name: userName
+        })
+    });
 
+    const data = await res.json();
 
+    if (!res.ok) {
+        alert(data.message);
+        return;
+    }
 
-    <script>
-        let water = document.getElementById("water");
-        let waterBalance = document.getElementById("water-balance");
+    console.log(data);
+    
+    renderReport(data.report);
+}
 
-        water.addEventListener("click", function () {
+function renderReport(report) {
 
-            let value;
+    // Total subscriptions
+    let totalSubscriptions = report.subscriptions.reduce((sum, sub) => {
+        return sum + Number(sub.subscription_type?.price || 0);
+    }, 0);
 
-            do {
-                value = prompt("رصيد المياه:");
-            } while (value !== null && (isNaN(value) || value.trim() === ""));
+    // Total expenses
+    let totalExpenses = report.expenses.reduce((sum, exp) => {
+        return sum + Number(exp.amount || 0);
+    }, 0);
 
-            if (value !== null) {
-                waterBalance.textContent = value;
-            }
+    let finalBalance = totalSubscriptions - totalExpenses;
 
-        });
-    </script>
+    // Summary
+    document.querySelector(".income").innerHTML =
+        `Total Subscription Revenue : ${totalSubscriptions}`;
+
+    document.querySelector(".expense").innerHTML =
+        `Total Expenses : ${totalExpenses}`;
+
+    document.querySelector(".balance").innerHTML =
+        `Final Balance : ${finalBalance}`;
+
+    document.getElementById("water-balance").textContent =
+        report.water_balance ?? 0;
+
+    // عدد الاشتراكات
+    document.querySelectorAll(".section-title span")[0].textContent =
+        report.subscriptions.length;
+
+    // جدول الاشتراكات
+    let subTable = document.querySelectorAll("tbody")[0];
+    subTable.innerHTML = "";
+
+    report.subscriptions.forEach(sub => {
+
+        let duration =
+            `${sub.subscription_type?.duration ?? ""} ${
+                sub.subscription_type?.duration_unit ?? ""
+            }`;
+
+        subTable.innerHTML += `
+            <tr>
+                <td>${sub.subscriber?.name ?? "-"}</td>
+                <td>${duration}</td>
+                <td>${sub.start_date}</td>
+                <td>${sub.end_date}</td>
+                <td>${sub.subscription_type?.price ?? 0}</td>
+            </tr>
+        `;
+    });
+
+    document.querySelectorAll(".section-title span")[1].textContent =
+        report.expenses.length;
+
+    let expTable = document.querySelectorAll("tbody")[1];
+    expTable.innerHTML = "";
+
+    report.expenses.forEach(exp => {
+        expTable.innerHTML += `
+            <tr>
+                <td>${exp.clause ?? "-"}</td>
+                <td>${exp.recipient ?? "-"}</td>
+                <td>${exp.amount ?? 0}</td>
+            </tr>
+        `;
+    });
+}
+</script>
+
 @endsection

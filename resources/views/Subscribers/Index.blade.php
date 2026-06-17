@@ -4,6 +4,9 @@
 
 
     <style>
+        tr{
+            cursor: pointer;
+        }
         .container-table {
             height: 500px;
             overflow-y: auto;
@@ -152,7 +155,7 @@
             subscribers.forEach(s => {
 
                 tbody.innerHTML += `
-                        <tr data-id="{{ $s->id }}">
+                        <tr data-id=${s.id }>
                             <td>${s.name}</td>
                             <td>${s.phone}</td>
                             <td>${s.id}</td>

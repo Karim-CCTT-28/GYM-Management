@@ -13,19 +13,22 @@ return new class extends Migration {
 
             $table->id();
 
-            $table->foreignId('subscriber_id')
-                ->constrained('subscribers')
-                ->onDelete('cascade');
+            $table->foreignId('subscriber_id');
+            $table->foreign('subscriber_id')->references('id')->on('subscribers');
 
-            $table->string('session_id')
-                ->default('dev');
 
+
+            $table->foreignId('subscription_type_id');
+            $table->foreign('subscription_type_id')->references('id')->on('subscription_types');
+         
+            $table->foreignId('session_report_id');
+            $table->foreign('session_report_id')->references('id')->on('session_reports');
+            
             $table->date('start_date');
 
             $table->date('end_date');
 
-            $table->string('created_by')
-                ->default('dev');
+            $table->string('created_by');
 
             $table->timestamps();
         });

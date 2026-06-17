@@ -10,11 +10,16 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('subscribers', function (Blueprint $table) {
+        Schema::create('expenses', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('phone')->unique();
-            $table->json('vector');
+
+            $table->foreignId('session_report_id');
+            $table->foreign('session_report_id')->references('id')->on('session_reports');
+
+
+            $table->string("recipient");
+            $table->string("clause");
+            $table->float("amount");
             $table->timestamps();
         });
     }
@@ -24,6 +29,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('subscribers');
+        Schema::dropIfExists('expenses');
     }
 };
