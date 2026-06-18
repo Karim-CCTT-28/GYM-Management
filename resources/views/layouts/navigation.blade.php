@@ -46,21 +46,49 @@
 
         }
 
-        .container {
+        /* .container {
             height: 95%;
             width: 95%;
             background-color: inherit;
             box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
             border-radius: 5px;
             padding: 5px;
+        } */
+
+        .container {
+            height: 95vh;
+            width: 95%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .yield-Subscribers,
         .yield-Expenses {
             display: flex;
             justify-content: center;
+            
 
         }
+
+        .yield-Expenses{
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-top: 100px;
+        }
+        .yield-EntranceGate {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            align-items: center;
+        }
+
+
+
+        
     </style>
 </head>
 

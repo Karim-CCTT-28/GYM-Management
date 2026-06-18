@@ -16,4 +16,9 @@ class Subscriber extends Model
     {
         return $this->hasMany(Subscription::class);
     }
+
+        public function checkIns()
+    {
+        return $this->hasMany(CheckIn::class);
+    }
 }

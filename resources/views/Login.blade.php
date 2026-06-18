@@ -199,10 +199,10 @@
     const canvas = document.getElementById("canvas");
 
     async function init() {
-// using cpu instad of gpu
-if (typeof faceapi !== 'undefined' && faceapi.tf) {
-            await faceapi.tf.setBackend('cpu');
-        }
+// // using cpu instad of gpu
+// if (typeof faceapi !== 'undefined' && faceapi.tf) {
+//             await faceapi.tf.setBackend('cpu');
+//         }
         await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
 
     }

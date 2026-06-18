@@ -186,9 +186,9 @@
 
     async function init() {
 
-if (typeof faceapi !== 'undefined' && faceapi.tf) {
-            await faceapi.tf.setBackend('cpu');
-        }
+// if (typeof faceapi !== 'undefined' && faceapi.tf) {
+//             await faceapi.tf.setBackend('cpu');
+//         }
         await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
 
     }

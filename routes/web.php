@@ -55,6 +55,7 @@ Route::middleware(['user'])->group(function () {
 
 
 
+    Route::get('/subscribers-today' , [SubscriberController::class , 'getCheckInToday']);
 
 
 });

@@ -4,8 +4,52 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use App\Models\Subscriber;
+use App\Models\CheckIn;
+use Carbon\Carbon;
 class SubscriberController extends Controller
 {
+
+
+    public function getCheckInToday()
+    {
+        try {
+
+            $checkInsToday = CheckIn::with('subscriber:id,name')
+                ->select('id', 'subscriber_id', 'is_allow', 'created_at', 'check_in_date')
+                ->whereDate('check_in_date', Carbon::today())
+                ->get();
+
+            \Log::info($checkInsToday);
+
+            if ($checkInsToday->isEmpty()) {
+                return response()->json([
+                    'message' => 'no Check ins for today',
+                    'subscribersToday' => []
+                ], 200);
+            }
+            $formattedSubscribers = $checkInsToday->map(function ($checkIn) {
+                return [
+                    'id' => $checkIn->subscriber->id,
+                    'name' => $checkIn->subscriber->name,
+                    'isAllow' => $checkIn->is_allow,
+                    'time' => $checkIn->created_at->format('H:i')
+                ];
+            });
+
+            return response()->json([
+                'subscribersToday' => $formattedSubscribers
+            ], 200);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
 
 
 
@@ -21,18 +65,21 @@ class SubscriberController extends Controller
 
 
 
-
+            $subscribers = Subscriber::select(
+                'id',
+                'vector'
+            )->get()->toJson();
 
             // Api py here
             $response = Http::attach(
                 'image',
                 file_get_contents($request->file('image')->getRealPath()),
                 'face.jpg'
-            )->post('http://127.0.0.1:5001/check-face', ['functionID' => 2]);
+            )->post('http://127.0.0.1:5001/check-face', ['functionID' => 2, 'subscribers' => $subscribers]);
 
 
             $data = $response->json();
-            \Log::info("Data : ", $data);
+
 
 
 
@@ -43,12 +90,28 @@ class SubscriberController extends Controller
                     'response' => $response->body()
                 ], 500);
             }
-            return response()->json([
-                // 'success' => $data['success'],
-                // 'same_person' => $data['same_person'],
-                // 'subscriber_id' => $data['subscriber_id']
-                'data' => $data
+
+
+            $sub = Subscriber::select('id', 'name')->where('id', $data['subscriber_id'])->first();
+
+            $today = now()->toDateString();
+
+            $hasActiveSubscription = \DB::table('subscriptions')
+                ->where('subscriber_id', $sub->id)
+                ->where('start_date', '<=', $today)
+                ->where('end_date', '>=', $today)
+                ->exists();
+
+            CheckIn::create([
+                'subscriber_id' => $sub->id,
+                'check_in_date' => Carbon::today()->toDateString(),
+                'is_allow' => $hasActiveSubscription
             ]);
+
+
+            return response()->json([
+                'success' => true,
+            ], 200);
 
         } catch (\Throwable $e) {
 

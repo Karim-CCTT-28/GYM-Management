@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Subscription extends Model
 {
     protected $fillable = [
-        'subscriber_id', 
-        'subscription_type_id', 
-        'start_date', 
-        'end_date', 
+        'subscriber_id',
+        'subscription_type_id',
+        'start_date',
+        'end_date',
         'created_by'
-        ,'session_report_id'
+        ,
+        'session_report_id'
     ];
 
     public function subscriber(): BelongsTo
@@ -26,7 +27,7 @@ class Subscription extends Model
     }
 
 
-     public function sessionReport()
+    public function sessionReport()
     {
         return $this->belongsTo(SessionReport::class);
     }

@@ -10,22 +10,19 @@
         }
 
         .avatar {
+            width: 100px;
             height: 100px;
             border-radius: 50%;
 
         }
 
-        .table-container {
-            width: 100%;
-            max-height: 500px;
-            overflow-x: auto;
-            overflow-y: auto;
-        }
 
         .EntranceGate {
             width: 100%;
             border-collapse: collapse;
             min-width: 600px;
+
+            overflow-y: auto;
         }
 
         th,
@@ -67,6 +64,12 @@
             gap: 5px;
         }
 
+        .table-container {
+            overflow-y: auto;
+            min-height: 0;
+            width: 100%;
+        }
+
         #loading {
             display: none;
         }
@@ -93,28 +96,11 @@
 
                     <th>Picture</th>
                     <th>Name</th>
-                    <th>Started Date</th>
-                    <th>End Date</th>
+                    <th>Time</th>
                     <th>ID</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-
-                    <td> <img alt="Random Person" class="avatar"> </td>
-                    <td>Random Person</td>
-                    <td>01/01/2025</td>
-                    <td>01/01/2026</td>
-                    <td>2085</td>
-                </tr>
-                <tr class="warring">
-
-                    <td> <img alt="Random Person" class="avatar"> </td>
-                    <td>Random Person</td>
-                    <td>01/01/2025</td>
-                    <td>01/01/2026</td>
-                    <td>2085</td>
-                </tr>
+            <tbody id="tbody">
 
             </tbody>
         </table>
@@ -137,13 +123,7 @@
     <!-- ================================================================== -->
     <script>
 
-        let images = document.getElementsByClassName("avatar");
 
-        Array.from(images).forEach(img => {
-            let random = Math.floor(Math.random() * 100);
-
-            img.src = `https://randomuser.me/api/portraits/men/${random}.jpg`
-        });
 
         // ===============================================================================
 
@@ -154,6 +134,7 @@
         const video = document.getElementById("video");
         const canvas = document.getElementById("canvas");
         let login = document.getElementById('login');
+        let tbody = document.getElementById('tbody');
 
 
         // if (faceDetected) {
@@ -167,9 +148,9 @@
 
         async function init() {
 
-if (typeof faceapi !== 'undefined' && faceapi.tf) {
-            await faceapi.tf.setBackend('cpu');
-        }
+            // if (typeof faceapi !== 'undefined' && faceapi.tf) {
+            //             await faceapi.tf.setBackend('cpu');
+            //         }
             await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
 
         }
@@ -245,12 +226,13 @@ if (typeof faceapi !== 'undefined' && faceapi.tf) {
 
         init().then(() => {
             startCamera();
+            getCheckInToday()
         });
 
 
 
         async function compareFaces() {
-           
+
 
             const captureCanvas = document.createElement("canvas");
             captureCanvas.width = video.videoWidth;
@@ -284,7 +266,21 @@ if (typeof faceapi !== 'undefined' && faceapi.tf) {
                     });
 
                     const result = await response.json();
+                    // result = 
+                    // {
+                    //     "success": true,
+                    //     "subscriber": {
+                    //         "id": 4,
+                    //         "name": "Karim Hamza"
+                    //     },
+                    //     "allow": true
+                    // }                    
+
                     console.log(result);
+
+
+
+                  
 
                 } catch (error) {
                     console.error(error);
@@ -300,6 +296,50 @@ if (typeof faceapi !== 'undefined' && faceapi.tf) {
 
         login.addEventListener("click", function () {
             compareFaces();
+            window.location.reload()
         })
+
+
+        async function getCheckInToday() {
+
+
+
+
+            //  [
+            //     {
+            //         "id": 4,
+            //         "name": "Karim Hamza",
+            //         "isAllow": 1
+            //     }
+            // ]
+            let res = await fetch('/subscribers-today', { method: 'GET' })
+            data = await res.json();
+            subscribers = data.subscribersToday;
+            console.log(data);
+
+            subscribers.forEach(sub => {
+
+                renderUser(sub)
+
+            });
+
+
+        }
+
+
+        function renderUser(sub) {
+            const imageUrl = `/storage/Subscribers/${sub.id}.jpg`;
+            const warring = sub.isAllow ? '' : 'warring';
+            tbody.innerHTML += `
+                                                <tr class="${warring}">
+                                                            <td><img src = "${imageUrl}" class = "avatar"/></td>
+                                                            <td>${sub.name}</td>
+                                                            <td>${sub.time}</td>
+                                                            <td>${sub.id}</td>
+                                                            </tr>
+                                                            `
+        }
+
+
     </script>
 @endsection
