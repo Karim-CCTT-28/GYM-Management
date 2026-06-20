@@ -9,8 +9,25 @@ use App\Models\SessionReport;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Throwable;
-class SubscriptionController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class SubscriptionController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware(
+                'employee',
+                only: [
+                    'index',
+                    'create',
+                    'store',
+                    'show'
+                ]
+            )
+        ];
+    }
 
     /**
      * Display a listing of the resource.
@@ -119,63 +136,63 @@ class SubscriptionController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        $subscription = Subscription::findOrFail($id);
+    // public function edit(string $id)
+    // {
+    //     $subscription = Subscription::findOrFail($id);
 
-        $subscribers = Subscriber::all();
+    //     $subscribers = Subscriber::all();
 
-        return view('Subscriptions.Edit', compact(
-            'subscription',
-            'subscribers'
-        ));
-    }
+    //     return view('Subscriptions.Edit', compact(
+    //         'subscription',
+    //         'subscribers'
+    //     ));
+    // }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
+    // public function update(Request $request, string $id)
+    // {
 
-        $request->validate([
+    //     $request->validate([
 
-            'subscriber_id' => 'required|exists:subscribers,id',
+    //         'subscriber_id' => 'required|exists:subscribers,id',
 
-            'start_date' => 'required|date',
+    //         'start_date' => 'required|date',
 
-            'end_date' => 'required|date',
+    //         'end_date' => 'required|date',
 
-        ]);
+    //     ]);
 
 
-        $subscription = Subscription::findOrFail($id);
+    //     $subscription = Subscription::findOrFail($id);
 
-        $subscription->update([
+    //     $subscription->update([
 
-            'subscriber_id' => $request->subscriber_id,
+    //         'subscriber_id' => $request->subscriber_id,
 
-            'start_date' => $request->start_date,
+    //         'start_date' => $request->start_date,
 
-            'end_date' => $request->end_date,
+    //         'end_date' => $request->end_date,
 
-        ]);
+    //     ]);
 
-        SessionReportController::updateBalance();
-        return redirect('/subscriptions');
-        }
-        
-        /**
-         * Remove the specified resource from storage.
+    //     SessionReportController::updateBalance();
+    //     return redirect('/subscriptions');
+    // }
+
+    /**
+     * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        $subscription = Subscription::findOrFail($id);
-        
-        $subscription->delete();
-        
-        SessionReportController::updateBalance();
-        return redirect('/subscriptions');
-    }
+    // public function destroy(string $id)
+    // {
+    //     $subscription = Subscription::findOrFail($id);
+
+    //     $subscription->delete();
+
+    //     SessionReportController::updateBalance();
+    //     return redirect('/subscriptions');
+    // }
 
 
 

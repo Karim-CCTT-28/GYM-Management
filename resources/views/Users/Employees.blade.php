@@ -43,10 +43,28 @@
             text-decoration: none;
             color: inherit;
         }
+
+                .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 18px;
+            background: black;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: white;
+            color: black;
+        }
     </style>
 </head>
 
 <body>
+
+<a href="/management" class="btn">Back</a>
     <button id="add"><a href="users/create">+</a></button>
     <div class="flex">
 

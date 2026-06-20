@@ -174,12 +174,12 @@
             subscribers.forEach(s => {
 
                 tbody.innerHTML += `
-                                                <tr data-id=${s.id}>
-                                                    <td>${s.name}</td>
-                                                    <td>${s.phone}</td>
-                                                    <td>${s.id}</td>
-                                                </tr>
-                                            `;
+                                                    <tr data-id=${s.id}>
+                                                        <td>${s.name}</td>
+                                                        <td>${s.phone}</td>
+                                                        <td>${s.id}</td>
+                                                    </tr>
+                                                `;
             });
         });
 
@@ -218,10 +218,19 @@
                 });
 
 
-                data = await response.json();
+                let contentType = response.headers.get("content-type");
 
-                alert(data.message)
-                window.location.reload()
+                if (contentType && contentType.includes("application/json")) {
+                    let data = await response.json();
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    let htmlText = await response.text();
+
+                    document.open();
+                    document.write(htmlText);
+                    document.close();
+                }
             })
         });
 

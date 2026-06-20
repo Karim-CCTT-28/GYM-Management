@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Model
 {
-    protected $fillable = ['user_name', 'role', 'hashed_password' , 'vector' , 'isDeleted'];
+    protected $fillable = ['user_name', 'role', 'hashed_password', 'vector', 'isDeleted'];
 
     protected $casts = [
         'vector' => 'array',
@@ -16,4 +16,10 @@ class User extends Model
     {
         return $this->hasMany(SessionReport::class);
     }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+
 }

@@ -4,12 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SubscriptionType;
-
-class SubscriptionTypesController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+class SubscriptionTypesController extends Controller implements HasMiddleware
 {
     //
 
+ public static function middleware(): array
+    {
+        return [
+            new Middleware(
+                'employee',
+                only: [
+                    'index'
+                ]
+            ),
 
+            new Middleware(
+                'admin',
+                only: [
+                'destroy',
+                'store'
+                ]
+            ),
+        ];
+    }
     public function index(Request $request)
     {
         $types = SubscriptionType::select('id', 'duration', 'price', 'duration_unit')
@@ -23,16 +42,16 @@ class SubscriptionTypesController extends Controller
 
 
 
-    public function edit(string $id)
-    {
-        try {
-            $type = SubscriptionType::findOrFail($id);
+    // public function edit(string $id)
+    // {
+    //     try {
+    //         $type = SubscriptionType::findOrFail($id);
 
-            return view('SubscriptionTypes.Edit', compact('type'));
-        } catch (\Throwable $e) {
-            return response()->json(['message', 'Subscription type not found']);
-        }
-    }
+    //         return view('SubscriptionTypes.Edit', compact('type'));
+    //     } catch (\Throwable $e) {
+    //         return response()->json(['message', 'Subscription type not found']);
+    //     }
+    // }
 
 
     public function destroy(string $id)

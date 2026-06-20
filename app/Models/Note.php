@@ -10,4 +10,9 @@ class Note extends Model
         'user_id',
         'note'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

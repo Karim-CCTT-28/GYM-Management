@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subscription Types</title>
-    
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -37,7 +38,8 @@
             background-color: #ffffff;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px 15px;
             text-align: center;
             border: 1px solid #000000;
@@ -71,7 +73,7 @@
             transform: scale(1.1);
         }
 
-      
+
         .fab {
             position: fixed;
             bottom: 30px;
@@ -103,7 +105,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); 
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -144,7 +146,8 @@
             text-align: center;
         }
 
-        .modal-content input, .modal-content select {
+        .modal-content input,
+        .modal-content select {
             width: 100%;
             padding: 10px;
             border: 1px solid #000000;
@@ -187,10 +190,29 @@
         .btn-cancel:hover {
             background-color: #f2f2f2;
         }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 18px;
+            background: black;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: 0.3s;
+            position: absolute;
+            left: 20px;
+        }
+
+        .btn:hover {
+            background: white;
+            color: black;
+        }
     </style>
 </head>
-<body>
 
+<body>
+    <a href="/management" class="btn">Back</a>
     <h2>Subscription Types</h2>
 
     <button class="fab" id="openModalBtn">+</button>
@@ -198,12 +220,12 @@
     <div class="modal-overlay" id="formModal">
         <div class="modal-content">
             <h3>Add New Subscription Type</h3>
-            
+
             <form action="/subscription-types" method="POST">
                 @csrf
                 <div style="display: flex; flex-direction: column; gap: 15px;">
                     <input type="number" name="duration" placeholder="Duration" required min="1">
-                    
+
                     <select name="duration_unit" required>
                         <option value="" disabled selected>Select Unit</option>
                         <option value="day">Day</option>
@@ -250,54 +272,55 @@
         </table>
     </div>
 
-<script>
-    const modal = document.getElementById('formModal');
-    const openBtn = document.getElementById('openModalBtn');
-    const closeBtn = document.getElementById('closeModalBtn');
+    <script>
+        const modal = document.getElementById('formModal');
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
 
-    openBtn.addEventListener('click', () => {
-        modal.classList.add('show');
-    });
-
-    closeBtn.addEventListener('click', () => {
-        modal.classList.remove('show');
-    });
-
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('show');
-        }
-    });
-
-    document.querySelectorAll('.btn-delete').forEach(d => {
-        d.addEventListener("click", function () {
-            let id = this.closest('tr').dataset.id;
-            deleteType(id);
+        openBtn.addEventListener('click', () => {
+            modal.classList.add('show');
         });
-    });
 
-    async function deleteType(id) {
-        if (!confirm("Are you sure you want to delete this type?")) {
-            return;
-        }
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+        });
 
-        try {
-            let response = await fetch(`/subscription-types/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                }
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(d => {
+            d.addEventListener("click", function () {
+                let id = this.closest('tr').dataset.id;
+                deleteType(id);
             });
+        });
 
-            let result = await response.json();
-            alert(result.message);
-            window.location.reload(); 
-            
-        } catch (error) {
-            console.error("Error during deletion:", error);
+        async function deleteType(id) {
+            if (!confirm("Are you sure you want to delete this type?")) {
+                return;
+            }
+
+            try {
+                let response = await fetch(`/subscription-types/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                let result = await response.json();
+                alert(result.message);
+                window.location.reload();
+
+            } catch (error) {
+                console.error("Error during deletion:", error);
+            }
         }
-    }
-</script>
+    </script>
 </body>
+
 </html>

@@ -63,11 +63,27 @@
             cursor: pointer;
             transition: 0.2s;
         }
+                .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 18px;
+            background: black;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: 0.3s;
+            margin-bottom: 5px;
+        }
+
+        .btn:hover {
+            background: white;
+            color: black;
+        }
     </style>
 </head>
 
 
-<button><a href="/management">Back</a></button>
+<a href="/management" class="btn">Back</a>
 <table>
     <tr>
         <th>User</th>

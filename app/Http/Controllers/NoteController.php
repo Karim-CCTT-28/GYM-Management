@@ -5,9 +5,50 @@ namespace App\Http\Controllers;
 use App\Models\Note;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class NoteController extends Controller
+class NoteController extends Controller implements HasMiddleware
 {
+
+
+
+
+    public static function middleware(): array
+    {
+
+        return [
+            new Middleware('employee', only: [
+                'index',
+                'store',
+                'show',
+                'update',
+                'destroy'
+            ])
+
+            ,
+            new Middleware('admin', only: [
+                'readAll'
+            ])
+
+        ];
+    }
+
+
+
+
+
+
+
+
+    public function readAll()
+    {
+
+        $notes = Note::with('user')->where('isDeleted', false)->get();
+
+        // return response()->json($notes);
+        return view('ReadNotes', ['notes' => $notes]);
+    }
     public function index()
     {
         $notes = Note::where('user_id', session('user_id'))
@@ -73,7 +114,9 @@ class NoteController extends Controller
             ->whereDate('created_at', Carbon::today())
             ->firstOrFail();
 
-        $note->delete();
+        $note->update([
+            'isDeleted' => true
+        ]);
 
         return response()->json([
             'status' => true,

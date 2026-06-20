@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2 Faces</title>
+</head>
+
+<body>
+
+    <form id="form">
+        <input id="image1" type="file" accept="image/*" required>
+        <input id="image2" type="file" accept="image/*" required>
+
+        <button type="submit">Compare</button>
+    </form>
+
+    <p id="result"></p>
+
+
+    <script>
+        document.getElementById("form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+
+            formData.append(
+                "image1",
+                document.getElementById("image1").files[0]
+            );
+
+            formData.append(
+                "image2",
+                document.getElementById("image2").files[0]
+            );
+
+            const response = await fetch(
+                "http://127.0.0.1:5002/check-face-demo",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const data = await response.json();
+
+            document.getElementById("result").innerText =
+                `Similarity: ${data.similarity}`;
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <script src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <style>
+        .container {
+            position: relative;
+            width: 640px;
+            height: 480px;
+        }
+
+        #video {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #status {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #captureBtn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: none;
+        }
+
+        #captureBtn:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+        
+    </style>
+</head>
+
+<body>
+
+    <p id="status">⏳ جاري تحميل النموذج...</p>
+
+    <div class="container">
+        <video id="video" width="640" height="480" autoplay muted></video>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <button id="captureBtn">📸 التقاط الوجه وإرساله</button>
+
+    <script>
+
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const status = document.getElementById("status");
+        const captureBtn = document.getElementById("captureBtn");
+
+        let faceDetected = false;
+        let faceSent = false;
+        let detectorInterval = null;
+
+        async function init() {
+
+            status.textContent = "⏳ جاري تحميل نموذج التعرف على الوجه...";
+
+            await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+
+            status.textContent = "📷 جاري تشغيل الكاميرا...";
+
+            startVideo();
+        }
+
+        function startVideo() {
+
+            navigator.mediaDevices.getUserMedia({
+                video: true
+            })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(error => {
+                    console.error(error);
+                    status.textContent = "❌ فشل الوصول إلى الكاميرا";
+                });
+
+        }
+
+        video.addEventListener("play", () => {
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            detectorInterval = setInterval(async () => {
+
+                if (faceSent) return;
+
+                const detections =
+                    await faceapi.detectAllFaces(
+                        video,
+                        new faceapi.TinyFaceDetectorOptions()
+                    );
+
+                const ctx = canvas.getContext("2d");
+
+                ctx.clearRect(
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+                if (detections.length > 0) {
+
+                    faceDetected = true;
+                    captureBtn.style.display = "block";
+                    status.textContent = "✅ تم اكتشاف وجه - اضغط على الزر";
+
+                    detections.forEach(det => {
+
+                        const box = det.box;
+
+                        ctx.strokeStyle = "red";
+                        ctx.lineWidth = 3;
+
+                        ctx.strokeRect(
+                            box.x,
+                            box.y,
+                            box.width,
+                            box.height
+                        );
+
+                    });
+
+                } else {
+
+                    faceDetected = false;
+                    captureBtn.style.display = "none";
+                    status.textContent = "🔍 جاري البحث عن وجه...";
+                }
+
+            }, 100);
+
+        });
+
+        captureBtn.addEventListener("click", async () => {
+
+            if (!faceDetected || faceSent) return;
+
+            await captureAndSend();
+
+        });
+
+        async function captureAndSend() {
+
+            if (faceSent) return;
+
+            faceSent = true;
+            captureBtn.disabled = true;
+
+            status.textContent = "📸 جاري إرسال الصورة...";
+
+            try {
+
+                const captureCanvas =
+                    document.createElement("canvas");
+
+                captureCanvas.width =
+                    video.videoWidth;
+
+                captureCanvas.height =
+                    video.videoHeight;
+
+                const captureCtx =
+                    captureCanvas.getContext("2d");
+
+                captureCtx.drawImage(
+                    video,
+                    0,
+                    0,
+                    captureCanvas.width,
+                    captureCanvas.height
+                );
+
+                const imageData =
+                    captureCanvas.toDataURL(
+                        "image/jpeg",
+                        0.9
+                    );
+
+                const response = await fetch(
+                    "http://localhost:5002/upload",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            image: imageData
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                console.log("OOOOOOOOOOOO");
+                
+                console.log(result);
+
+                clearInterval(detectorInterval);
+
+                video.srcObject
+                    .getTracks()
+                    .forEach(track => track.stop());
+
+                status.textContent =
+                    "✅ تم إرسال الصورة بنجاح";
+
+                captureBtn.style.display = "none";
+
+            } catch (error) {
+
+                console.error(error);
+
+                faceSent = false;
+                captureBtn.disabled = false;
+
+                status.textContent =
+                    "❌ فشل إرسال الصورة إلى الخادم";
+
+            }
+
+        }
+
+        init();
+
+    </script>
+
+</body>
+
+</html>

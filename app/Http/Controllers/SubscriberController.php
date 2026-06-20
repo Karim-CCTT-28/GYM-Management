@@ -6,10 +6,46 @@ use Illuminate\Http\Request;
 use App\Models\Subscriber;
 use App\Models\CheckIn;
 use Carbon\Carbon;
-class SubscriberController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+
+
+/**
+ * Public : getSubscribers
+ * Employee : store , checkFace , getVector , getCheckInToday , index , show , create
+ * Admin : edit , update , destroy
+ */
+
+class SubscriberController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware(
+                'employee',
+                only: [
+                    'store',
+                    'checkFace',
+                    'getVector',
+                    'getCheckInToday',
+                    'index',
+                    'show',
+                    'create',
+                    'getSubscribers',
+                ]
+            ),
 
-
+            new Middleware(
+                'admin',
+                only: [
+                    'edit',
+                    'update',
+                    'destroy',
+                ]
+            ),
+        ];
+    }
     public function getCheckInToday()
     {
 
@@ -262,7 +298,7 @@ class SubscriberController extends Controller
     /**
      * Update the specified resource in storage.
      */
-/**
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
@@ -282,7 +318,7 @@ class SubscriberController extends Controller
 
         if ($request->hasFile('face_image')) {
             $image = $request->file('face_image');
-            
+
             $vector = $this->getVector($image);
             $updateData['vector'] = $vector;
 
@@ -292,7 +328,7 @@ class SubscriberController extends Controller
 
         $subscriber->update($updateData);
 
-        return view('Success' , ['path'=>'/subscribers']);
+        return view('Success', ['path' => '/subscribers']);
     }
     /**
      * Remove the specified resource from storage.

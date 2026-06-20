@@ -8,9 +8,27 @@ use App\Models\SessionReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
-class UserController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+class UserController extends Controller implements HasMiddleware
 {
-
+ public static function middleware(): array
+    {
+        return [
+      
+            new Middleware(
+                'admin',
+                only: [
+                    'create',
+                    'store',
+                    'edit',
+                    'update',
+                    'destroy',
+                    'getEmployees'
+                ]
+            ),
+        ];
+    }
 
     public function checkFace(Request $request)
     {

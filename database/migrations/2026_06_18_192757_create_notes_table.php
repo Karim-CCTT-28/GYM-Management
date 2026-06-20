@@ -17,6 +17,8 @@ return new class extends Migration
                 ->on('users');
                 
 
+            $table->boolean('isDeleted')->default(false);    
+
             $table->text('note');
 
             $table->timestamps();

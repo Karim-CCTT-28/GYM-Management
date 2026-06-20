@@ -9,13 +9,39 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Carbon\Carbon;
 use Throwable;
-
-class SessionReportController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+class SessionReportController extends Controller implements HasMiddleware
 {
+
+
+
+    public static function middleware(): array
+    {
+        return [
+            new Middleware(
+                'employee',
+                only: [
+                    'show',
+                    'setWaterBalance',
+                    'updateBalance',
+                    'buildReportData'
+                ]
+            ),
+
+            new Middleware(
+                'admin',
+                only: [
+                    'adminShow',
+                    'index',
+                ]
+            ),
+        ];
+    }
     public function show()
     {
         try {
-   
+
             $user = User::where('user_name', session("user_name"))
                 ->select(['id', 'user_name'])
                 ->first();
@@ -69,6 +95,7 @@ class SessionReportController extends Controller
         $report = SessionReport::whereDate(
             'created_date',
             now()->toDateString()
+                ->where('user_id', session('user_id'))
         )->first();
 
         if (!$report) {

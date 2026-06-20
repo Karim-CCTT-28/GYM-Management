@@ -61,8 +61,9 @@
             <a href="/subscription-types?q=1">Subscription Types</a>
         </div>
 
+    
         <div class="management-card">
-            <a href="/">Subscribers</a>
+            <a href="/read-notes">Notes</a>
         </div>
     </div>
 @endsection
