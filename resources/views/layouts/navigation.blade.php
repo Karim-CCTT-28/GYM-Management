@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="{{ asset('js/face-api.min.js') }}"></script>
+    <script src="{{ asset('js/html2pdf.bundle.min.js') }}"></script>
     <title>Gym Management</title>
 
     <style>
@@ -67,17 +68,26 @@
         .yield-Expenses {
             display: flex;
             justify-content: center;
-            
+
 
         }
 
-        .yield-Expenses{
+        .yield-Management {
+            display: flex;
+            justify-content: center;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* .yield-Expenses,
+        .yield-Notes {
             position: absolute;
             display: flex;
             justify-content: center;
             width: 100%;
             margin-top: 100px;
-        }
+        } */
+
         .yield-EntranceGate {
             flex: 1;
             display: flex;
@@ -86,14 +96,13 @@
             align-items: center;
         }
 
-
-
-        
+        .yield-Report {
+            overflow-y: auto;
+        }
     </style>
 </head>
 
 <body>
-
 
     <div class="container">
 
@@ -103,25 +112,46 @@
             <button id="3">Report</button>
             <button id="4">Expenses</button>
             <button id="5">Notes</button>
+            <button id="6">Management</button>
         </header>
 
-        <div class="yield-EntranceGate">
-            @yield("EntranceGate")
-        </div>
+        @hasSection('EntranceGate')
+            <div class="yield-EntranceGate">
+                @yield("EntranceGate")
+            </div>
+        @endif
 
-        <div class="yield-Subscribers">
-            @yield("Subscribers")
-        </div>
+        @hasSection('Subscribers')
+            <div class="yield-Subscribers">
+                @yield("Subscribers")
+            </div>
+        @endif
 
-        <div class="yield-Report">
-            @yield("Report")
-        </div>
+        @hasSection('Report')
+            <div class="yield-Report">
+                @yield("Report")
+            </div>
+        @endif
 
-        <div class="yield-Expenses">
-            @yield("Expenses")
-        </div>
+        @hasSection('Expenses')
+            <div class="yield-Expenses">
+                @yield("Expenses")
+            </div>
+        @endif
+
+        @hasSection('Notes')
+            <div class="yield-Notes">
+                @yield("Notes")
+            </div>
+        @endif
+
+        @hasSection('Management')
+            <div class="yield-Management">
+                @yield("Management")
+            </div>
+        @endif
+
     </div>
-
 
     <script>
 
@@ -151,6 +181,9 @@
         else if (path === "/notes") {
             document.getElementById("5").classList.add("active");
         }
+        else if (path === "/management") {
+            document.getElementById("6").classList.add("active");
+        }
 
         // navigation
         tabs.forEach(tab => {
@@ -173,6 +206,9 @@
                 }
                 else if (id === "5") {
                     window.location.href = "/notes";
+                }
+                else if (id === "6") {
+                    window.location.href = "/management";
                 }
 
             });

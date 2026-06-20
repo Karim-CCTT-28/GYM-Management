@@ -7,6 +7,7 @@ use \App\Http\Controllers\UserController;
 use \App\Http\Controllers\SubscriptionTypesController;
 use \App\Http\Controllers\SessionReportController;
 use \App\Http\Controllers\ExpenseController;
+use \App\Http\Controllers\NoteController;
 
 
 
@@ -16,7 +17,7 @@ use \App\Http\Controllers\ExpenseController;
 
 Route::get('/subscribers/vectors', [SubscriberController::class, 'getSubscribers']);
 
-Route::get('/test', [ExpenseController::class, 'index']);
+Route::get('/test', [SessionReportController::class, 'updateBalance']);
 
 Route::get("/", function () {
     return view("Login");
@@ -34,9 +35,9 @@ Route::middleware(['user'])->group(function () {
     Route::resource('expenses', ExpenseController::class);
     Route::resource('/subscribers', SubscriberController::class);
     Route::resource('/subscriptions', SubscriptionController::class);
-    Route::resource('/subscription-type', SubscriptionTypesController::class);
-    
-
+    Route::resource('/subscription-types', SubscriptionTypesController::class);
+    Route::resource('/notes', NoteController::class);
+    Route::resource('/users',UserController::class)->except('index');
     Route::post('/session-report', [SessionReportController::class, 'show']);
    
     Route::post('/set-water-balance',[SessionReportController::class , 'setWaterBalance']);
@@ -57,5 +58,16 @@ Route::middleware(['user'])->group(function () {
 
     Route::get('/subscribers-today' , [SubscriberController::class , 'getCheckInToday']);
 
+
+    Route::get('/management' , function(){
+        return view("Management");
+    });
+
+
+
+
+    Route::get('/employees' , [UserController::class , 'getEmployees']);
+    Route::get('/reports' , [SessionReportController::class , 'index']);
+    Route::get('/admin-report/{id}' , [SessionReportController::class , 'adminShow']);
 
 });

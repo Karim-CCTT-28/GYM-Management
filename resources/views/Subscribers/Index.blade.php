@@ -4,9 +4,10 @@
 
 
     <style>
-        tr{
+        tr {
             cursor: pointer;
         }
+
         .container-table {
             height: 500px;
             overflow-y: auto;
@@ -25,7 +26,7 @@
         }
 
         tr:hover {
-            background-color: #ccc;
+            class='btn'
         }
 
         #search {
@@ -52,7 +53,6 @@
         }
 
         #Subscribers {
-            max-width: 300px;
             display: flex;
             align-items: center;
             flex-direction: column;
@@ -75,6 +75,11 @@
             background-color: white;
             color: black;
         }
+
+        .btn:hover {
+            background-color: #e2e8f0;
+            transform: scale(1.1);
+        }
     </style>
 
 
@@ -95,6 +100,9 @@
                         <th>Name</th>
                         <th>Phone</th>
                         <th>ID</th>
+                        <th>-</th>
+                        <th>-</th>
+                        <th>-</th>
                     </tr>
                 </thead>
 
@@ -105,6 +113,17 @@
                             <td>{{ $s->name }}</td>
                             <td>{{$s->phone}}</td>
                             <td>{{$s->id}}</td>
+                            <td>
+                                <img src="{{ asset('/images/update.svg') }}" alt="update" class='btn update'>
+                            </td>
+                            <td>
+
+                                <img src="{{ asset('/images/delete.svg') }}" alt="delete" class='btn delete'>
+                            </td>
+                            <td>
+
+                                <img src="{{ asset('/images/show.svg') }}" alt="show" class='btn show'>
+                            </td>
                         </tr>
                     @endforeach
 
@@ -155,12 +174,12 @@
             subscribers.forEach(s => {
 
                 tbody.innerHTML += `
-                        <tr data-id=${s.id }>
-                            <td>${s.name}</td>
-                            <td>${s.phone}</td>
-                            <td>${s.id}</td>
-                        </tr>
-                    `;
+                                                <tr data-id=${s.id}>
+                                                    <td>${s.name}</td>
+                                                    <td>${s.phone}</td>
+                                                    <td>${s.id}</td>
+                                                </tr>
+                                            `;
             });
         });
 
@@ -168,19 +187,50 @@
         //======================================
 
 
-        let rows = document.querySelectorAll("tbody tr");
+        let rows = document.querySelectorAll(".show");
 
         for (let i = 0; i < rows.length; i++) {
 
             rows[i].addEventListener("click", function () {
 
-                let id = this.dataset.id;
+
+                let id = this.closest('tr').dataset.id;
 
                 window.location.href = "/subscribers/" + id;
 
             });
 
         }
+        //========================================================================
 
+        document.querySelectorAll(".delete").forEach(d => {
+
+            d.addEventListener("click", async function () {
+                if (!confirm("هل أنت متأكد انك تريد الحذف؟")) return;
+
+                let id = this.closest('tr').dataset.id;
+                let response = await fetch(`/subscribers/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+
+                data = await response.json();
+
+                alert(data.message)
+                window.location.reload()
+            })
+        });
+
+
+        document.querySelectorAll(".update").forEach(btn => {
+            btn.onclick = function () {
+                let id = this.closest('tr').dataset.id;
+                window.location.href = `/subscribers/${id}/edit`;
+            };
+        });
     </script>
 @endsection

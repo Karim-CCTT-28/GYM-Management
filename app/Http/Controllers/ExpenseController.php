@@ -44,13 +44,24 @@ class ExpenseController extends Controller
                 ], 404);
             }
 
-            $expense = Expense::create([
+
+            $net_total = SessionReport::whereDate('created_at', Carbon::today())
+                ->sum('net_total');
+
+            if ($request->amount > $net_total) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'لا يوجد رصيد كافي'
+                ], 400);
+            }
+
+            Expense::create([
                 'session_report_id' => $sessionReport->id,
                 'recipient' => $request->recipient,
                 'clause' => $request->clause,
                 'amount' => $request->amount,
             ]);
-
+            SessionReportController::updateBalance();
             return response()->json([
                 'status' => true,
                 'message' => 'Expense created successfully'
@@ -69,8 +80,8 @@ class ExpenseController extends Controller
 
         try {
 
-        $user_name = session("user_name");
-        
+            $user_name = session("user_name");
+
             $user = User::where('user_name', $user_name)->first();
 
             if (!$user) {
@@ -100,7 +111,7 @@ class ExpenseController extends Controller
 
 
 
-            return view("Expenses" , ["expenses"=>$expenses]);
+            return view("Expenses", ["expenses" => $expenses]);
         } catch (\Throwable $e) {
             \Log::info("D:" . $e->getMessage());
             return response()->json([
@@ -114,15 +125,18 @@ class ExpenseController extends Controller
     {
         $expense = Expense::findOrFail($id);
 
-        $expense->delete();
+        $expense->update([
+            'isDeleted'=>true
+        ]);
 
+        SessionReportController::updateBalance();
         return response()->json([
             'status' => true,
             'message' => 'Expense deleted successfully'
         ]);
     }
 
-   
+
     public function update(Request $request, $id)
     {
         $expense = Expense::findOrFail($id);
@@ -139,6 +153,7 @@ class ExpenseController extends Controller
             'amount' => $request->amount,
         ]);
 
+        SessionReportController::updateBalance();
         return response()->json([
             'status' => true,
             'message' => 'Expense updated successfully',
@@ -148,10 +163,11 @@ class ExpenseController extends Controller
 
 
 
-    public function show($id)  {
-        
-    $row = Expense::findOrFail($id);
+    public function show($id)
+    {
 
-    return response()->json($row);
+        $row = Expense::findOrFail($id);
+
+        return response()->json($row);
     }
 }

@@ -10,7 +10,8 @@ class Expense extends Model
         'session_report_id',
         'recipient',
         'clause',
-        'amount'
+        'amount',
+        'isDeleted'
     ];
 
     public function sessionReport()

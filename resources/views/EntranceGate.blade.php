@@ -74,14 +74,14 @@
             display: none;
         }
     </style>
-    <div class="face">
+    <p id="loading">Loading...</p>
+    <div class="face" id="face">
 
         <div class="camera-box">
 
             <video id="video" autoplay playsinline width="300"></video>
 
             <canvas id="canvas"></canvas>
-            <p id="loading">Loading...</p>
         </div>
         <button id="login" disabled>Login</button>
     </div>
@@ -136,6 +136,8 @@
         let login = document.getElementById('login');
         let tbody = document.getElementById('tbody');
 
+        let faceblcok = document.getElementById('face');
+        let loading = document.getElementById("loading");
 
         // if (faceDetected) {
         //     login.disabled = false;
@@ -173,6 +175,8 @@
                 checkFace();
 
 
+                console.log('working!');
+                
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
             });
@@ -234,6 +238,9 @@
         async function compareFaces() {
 
 
+            faceblcok.style = "display:none";
+            loading.style = "display:block";
+
             const captureCanvas = document.createElement("canvas");
             captureCanvas.width = video.videoWidth;
             captureCanvas.height = video.videoHeight;
@@ -276,16 +283,18 @@
                     //     "allow": true
                     // }                    
 
-                    console.log(result);
+
+
+                    if (!result.ok) {
+                        alert(result.message)
+
+                    }
 
 
 
-                  
 
                 } catch (error) {
                     console.error(error);
-                } finally {
-                    isProcessing = false;
                 }
 
             }, "image/jpeg");
@@ -305,39 +314,56 @@
 
 
 
-            //  [
-            //     {
-            //         "id": 4,
-            //         "name": "Karim Hamza",
-            //         "isAllow": 1
-            //     }
-            // ]
-            let res = await fetch('/subscribers-today', { method: 'GET' })
-            data = await res.json();
-            subscribers = data.subscribersToday;
-            console.log(data);
+//response = 
+            // {
+            //     "subscribersToday": [
+            //         {
+            //             "id": 2,
+            //             "name": "Karim Hamza",
+            //             "isAllow": 0,
+            //             "time": "07:05"
+            //         }
+            //     ]
+            // }
 
-            subscribers.forEach(sub => {
+            try {
 
-                renderUser(sub)
+                let res = await fetch('/subscribers-today', { method: 'GET' })
+                data = await res.json();
 
-            });
+
+
+              
+
+                subscribers = data.subscribersToday;
+                // console.log(subscribers);
+                subscribers.forEach(sub => {
+
+                    renderUser(sub)
+
+                });
+            } catch (e) {
+                console.log(e.message);
+
+            }
 
 
         }
 
 
         function renderUser(sub) {
+
+
             const imageUrl = `/storage/Subscribers/${sub.id}.jpg`;
             const warring = sub.isAllow ? '' : 'warring';
             tbody.innerHTML += `
-                                                <tr class="${warring}">
-                                                            <td><img src = "${imageUrl}" class = "avatar"/></td>
-                                                            <td>${sub.name}</td>
-                                                            <td>${sub.time}</td>
-                                                            <td>${sub.id}</td>
-                                                            </tr>
-                                                            `
+                                                                <tr class="${warring}">
+                                                                            <td><img src = "${imageUrl}" class = "avatar"/></td>
+                                                                            <td>${sub.name}</td>
+                                                                            <td>${sub.time}</td>
+                                                                            <td>${sub.id}</td>
+                                                                            </tr>
+                                                                            `
         }
 
 

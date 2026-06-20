@@ -12,14 +12,21 @@ class SubscriberController extends Controller
 
     public function getCheckInToday()
     {
+
+
+
+        $isExists = Subscriber::select('id')->count();
+        if ($isExists == 0) {
+            return response()->json(['success' => false, 'message' => 'No Subscribers Found'], 400);
+        }
         try {
 
             $checkInsToday = CheckIn::with('subscriber:id,name')
                 ->select('id', 'subscriber_id', 'is_allow', 'created_at', 'check_in_date')
                 ->whereDate('check_in_date', Carbon::today())
+                ->latest()
                 ->get();
 
-            \Log::info($checkInsToday);
 
             if ($checkInsToday->isEmpty()) {
                 return response()->json([
@@ -27,7 +34,9 @@ class SubscriberController extends Controller
                     'subscribersToday' => []
                 ], 200);
             }
+
             $formattedSubscribers = $checkInsToday->map(function ($checkIn) {
+
                 return [
                     'id' => $checkIn->subscriber->id,
                     'name' => $checkIn->subscriber->name,
@@ -55,7 +64,10 @@ class SubscriberController extends Controller
 
     public function checkFace(Request $request)
     {
-
+        $isExists = Subscriber::select('id')->count();
+        if ($isExists == 0) {
+            return response()->json(['message' => 'No Subscribers Found'], 500);
+        }
 
         try {
 
@@ -173,14 +185,18 @@ class SubscriberController extends Controller
         $search = $request->query('search');
         if ($search) {
 
-            $subscribers = Subscriber::where('name', 'LIKE', "%{$search}%")
-                ->orWhere('phone', 'LIKE', "%{$search}%")
+            $subscribers = Subscriber::where('isDeleted', false)
+                ->where(function ($query) use ($search) {
+                    $query->where('name', 'LIKE', "%{$search}%")
+                        ->orWhere('phone', 'LIKE', "%{$search}%");
+                })
                 ->get();
 
             return response()->json($subscribers);
         } else {
 
-            $subscribers = Subscriber::select("id", "name", "phone")->orderBy("id", "desc")->get();
+            $subscribers = Subscriber::select("id", "name", "phone")->orderBy("id", "desc")
+                ->where('isDeleted', false)->get();
 
             return view('Subscribers.Index', compact("subscribers"));
         }
@@ -215,7 +231,6 @@ class SubscriberController extends Controller
 
         $image = $request->file('face_image');
         $vector = $this->getVector($image);
-        \Log::info($vector);
         $s = Subscriber::create([
             'name' => $request->name,
             'phone' => $request->phone,
@@ -239,24 +254,71 @@ class SubscriberController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        $subscriber = Subscriber::findOrFail($id);
+        return view('Subscribers.Edit', compact('subscriber'));
     }
-
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+/**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
     {
-        //
-    }
+        $request->validate([
+            'name' => 'required',
+            'phone' => 'required',
+            'face_image' => 'nullable'
+        ]);
 
+        $subscriber = Subscriber::findOrFail($id);
+
+        $updateData = [
+            'name' => $request->name,
+            'phone' => $request->phone,
+        ];
+
+        if ($request->hasFile('face_image')) {
+            $image = $request->file('face_image');
+            
+            $vector = $this->getVector($image);
+            $updateData['vector'] = $vector;
+
+            $imgName = $subscriber->id . '.jpg';
+            $image->storeAs('Subscribers', $imgName, 'public');
+        }
+
+        $subscriber->update($updateData);
+
+        return view('Success' , ['path'=>'/subscribers']);
+    }
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
         //
+
+        try {
+
+            $s = Subscriber::findOrFail($id);
+
+            $s->update([
+                'isDeleted' => true
+            ]);
+
+            SessionReportController::updateBalance();
+            return response()->json([
+                'status' => true,
+                'message' => 'Subscriber deleted successfully'
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }

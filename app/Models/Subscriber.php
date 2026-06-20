@@ -10,7 +10,7 @@ class Subscriber extends Model
     protected $casts = [
     'vector' => 'array'
 ];
-    protected $fillable = ['name', 'phone' , 'vector'];
+    protected $fillable = ['name', 'phone' , 'vector' , 'isDeleted'];
 
     public function subscriptions()
     {

@@ -81,11 +81,8 @@ class SubscriptionController extends Controller
 
 
             $session = SessionReport::where('user_id', session('user_id'))
-                ->whereDate('created_date', Carbon::today()->toDateString())
-                ->first();
+                ->whereDate('created_date', Carbon::today()->toDateString())->first();
 
-
-            \Log::info('User ID from Session: ' . $session->id); // i get 1
 
             Subscription::create([
                 'subscriber_id' => $request->subscriber_id,
@@ -96,7 +93,7 @@ class SubscriptionController extends Controller
                 'session_report_id' => $session->id
             ]);
 
-
+            SessionReportController::updateBalance();
             return response()->json([
                 'success' => true,
             ], 200);
@@ -163,19 +160,25 @@ class SubscriptionController extends Controller
 
         ]);
 
-
+        SessionReportController::updateBalance();
         return redirect('/subscriptions');
-    }
-
-    /**
-     * Remove the specified resource from storage.
+        }
+        
+        /**
+         * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
         $subscription = Subscription::findOrFail($id);
-
+        
         $subscription->delete();
-
+        
+        SessionReportController::updateBalance();
         return redirect('/subscriptions');
     }
+
+
+
+
+
 }

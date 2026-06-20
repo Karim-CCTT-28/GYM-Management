@@ -199,10 +199,10 @@
     const canvas = document.getElementById("canvas");
 
     async function init() {
-// // using cpu instad of gpu
-// if (typeof faceapi !== 'undefined' && faceapi.tf) {
-//             await faceapi.tf.setBackend('cpu');
-//         }
+        // // using cpu instad of gpu
+        // if (typeof faceapi !== 'undefined' && faceapi.tf) {
+        //             await faceapi.tf.setBackend('cpu');
+        //         }
         await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
 
     }
@@ -247,6 +247,8 @@
 
         let response = await fetch("/users");
         let users = await response.json();
+
+
 
         let select = document.getElementById("userSelect");
 
@@ -373,15 +375,17 @@
             const res = await faceResponse.json();
 
 
+            console.log(res);
+            
 
-            if (res.success) {
+            if (res.same_person) {
                 window.location.href = '/entranceGate'
                 clearInterval(detectorInterval);
                 video.srcObject
                     .getTracks()
                     .forEach(track => track.stop());
             } else {
-                alert(res.message);
+                flag.textContent = 'Faces Not Match';
             }
         } catch (error) {
             flag.textContent = error.message;

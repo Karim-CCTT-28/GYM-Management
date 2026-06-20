@@ -134,7 +134,7 @@
     <script>
         async function loadTypes() {
             try {
-                const res = await fetch("/subscription-type");
+                const res = await fetch("/subscription-types");
                 const types = await res.json();
 
                 const select = document.getElementById("typeSelect");

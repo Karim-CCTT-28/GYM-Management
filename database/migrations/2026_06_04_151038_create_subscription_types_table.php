@@ -23,8 +23,11 @@ return new class extends Migration {
         Schema::create('subscription_types', function (Blueprint $table) {
             $table->id();
             $table->integer('duration');
-            $table->text('duration_unit');
+            $table->string('duration_unit');
             $table->float('price');
+            $table->boolean('isDeleted')->default(false);
+
+            $table->unique(['duration', 'duration_unit']);
             $table->timestamps();
         });
     }

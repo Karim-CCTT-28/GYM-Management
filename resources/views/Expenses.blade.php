@@ -4,8 +4,8 @@
 @section("Expenses")
 
     <style>
-        tr:hover {
-            background-color: #ccc;
+        .update-btn,
+        .delete-btn {
             cursor: pointer;
         }
 
@@ -61,7 +61,7 @@
             margin: auto;
         }
 
-        .new-expenses ,
+        .new-expenses,
         .update-expenses {
             position: absolute;
             display: none;
@@ -80,6 +80,9 @@
                 <th>Clause</th>
                 <th>Recipient</th>
                 <th>Amount</th>
+                <th>-</th>
+                <th>-</th>
+
             </tr>
         </thead>
 
@@ -90,6 +93,12 @@
                     <td>{{ $expense->clause }}</td>
                     <td>{{ $expense->recipient }}</td>
                     <td>{{ $expense->amount }}</td>
+                    <td class="delete-btn">
+                        <img src="{{ asset('/images/delete.svg') }}" alt="delete">
+                    </td>
+                    <td class="update-btn">
+                        <img src="{{ asset('/images/update.svg') }}" alt="update">
+                    </td>
                 </tr>
             @empty
                 <tr>
@@ -144,7 +153,9 @@
 
 
 
-
+        document.getElementById('cancel-update').addEventListener('click', function () {
+            document.getElementsByClassName("update-expenses")[0].style = 'display:none';
+        })
 
 
 
@@ -157,7 +168,7 @@
         let cancel = document.getElementById("cancel-add");
         let save = document.getElementById("save");
         let user_name = document.getElementById("user_name").value;
-
+        let update = document.getElementById("save-update")
 
 
         add.addEventListener("click", function () {
@@ -207,7 +218,7 @@
                     input.value = "";
                 });
 
-                loadExpenses();
+                window.location.reload();
             } else {
                 alert(result.message);
             }
@@ -218,14 +229,14 @@
 
 
 
-        updateRow()
-        function updateRow() {
-            let rows = document.querySelectorAll("#expenses-body tr");
+        showRow()
+        function showRow() {
+            let rows = document.querySelectorAll(".update-btn");
 
             rows.forEach(row => {
 
                 row.addEventListener("click", async function () {
-                    let id = this.dataset.id;
+                    let id = this.closest('tr').dataset.id;
 
                     let response = await fetch(`/expenses/${id}`);
 
@@ -241,6 +252,90 @@
 
                 })
             });
-        }        
+        }
+
+
+
+        update.addEventListener('click', async function () {
+
+            let id = document.getElementById('update_id').value;
+
+            let clause = document.getElementById('update_clause').value;
+            let recipient = document.getElementById('update_recipient').value;
+            let amount = document.getElementById('update_amount').value;
+
+            let response = await fetch(`/expenses/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    clause: clause,
+                    recipient: recipient,
+                    amount: amount
+                })
+            });
+
+            let result = await response.json();
+
+            if (result.status) {
+
+                window.location.reload();
+            } else {
+                alert(result.message);
+            }
+
+
+
+
+
+
+
+
+
+
+        });
+
+
+
+        showDelete();
+
+        function showDelete() {
+
+            let buttons = document.querySelectorAll('.delete-btn');
+
+            buttons.forEach(btn => {
+
+                btn.addEventListener('click', async function () {
+
+                    let id = this.closest('tr').dataset.id;
+
+                    if (!confirm('هل تريد حذف هذا المصروف؟')) {
+                        return;
+                    }
+
+                    let response = await fetch(`/expenses/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    let result = await response.json();
+
+                    if (result.status) {
+
+                        this.closest('tr').remove();
+
+                    } else {
+
+                        alert(result.message);
+                    }
+                });
+
+            });
+        }
     </script>
 @endsection

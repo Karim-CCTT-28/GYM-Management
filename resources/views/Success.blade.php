@@ -22,19 +22,19 @@
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border-top: 5px solid #28a745;
+            border-top: 5px solid #000;
             max-width: 400px;
             width: 100%;
         }
 
         .icon {
             font-size: 50px;
-            color: #28a745;
+            color: #000;
             margin-bottom: 10px;
         }
 
         h1 {
-            color: #28a745;
+            color: #000;
             margin-bottom: 10px;
         }
 
@@ -46,7 +46,7 @@
         .btn {
             display: inline-block;
             padding: 10px 20px;
-            background: #28a745;
+            background: #000;
             color: white;
             text-decoration: none;
             border-radius: 6px;

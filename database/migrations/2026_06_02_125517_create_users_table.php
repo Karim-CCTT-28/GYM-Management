@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string("hashed_password");
             $table->json('vector');
             $table->timestamps();
+
+            $table->boolean('isDeleted')->default(false);
         });
     }
 

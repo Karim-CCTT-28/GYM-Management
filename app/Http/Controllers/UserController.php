@@ -17,6 +17,7 @@ class UserController extends Controller
 
 
 
+
         try {
             $request->validate([
                 'image' => 'required|image'
@@ -24,28 +25,35 @@ class UserController extends Controller
 
 
 
-            $user = User::where('id', session('user_id'))->first();
 
+
+            $user = User::where('id', session("user_id"))->first();
             $user_vector = $user->vector;
             // Api py here
             $response = Http::attach(
                 'image',
-                file_get_contents($request->file('image')) , 'face.jpg'
+                file_get_contents($request->file('image')),
+                'face.jpg'
             )->post('http://127.0.0.1:5001/check-face', ['functionID' => 1, 'user_vector' => json_encode($user_vector)]);
-          
-          
-            
-            if(!$response->json()['success']){
-                return response()->json(['message' => $response->json()['message']], 400);
-                }
-            
-            $same_person = $response->json()['same_person'];
 
+            $request->file('image')->move(public_path('uploads'), 'temp.jpg');
+
+
+            if (!$response->json()['success']) {
+                return response()->json(['message' => $response->json()['message']], 400);
+            }
+
+            $same_person = $response->json()['same_person'];
+            session([
+
+                'user_name' => $user->user_name
+            ]);
             return response()->json([
                 'success' => true,
                 'same_person' => $same_person,
-              
+
             ]);
+
 
         } catch (Throwable $e) {
             return response()->json(['message' => $e->getMessage()], 400);
@@ -90,7 +98,6 @@ class UserController extends Controller
                 ->whereDate('created_date', Carbon::today()->toDateString())
                 ->first();
 
-            \Log::info("todaySession" . $todaySession);
             if (!$todaySession) {
                 SessionReport::create([
                     'user_id' => $user->id,
@@ -101,11 +108,12 @@ class UserController extends Controller
                     'created_date' => Carbon::today()->toDateString()
                 ]);
             }
+
             session([
 
-                'user_name' => $request->user,
                 'user_id' => $user->id
             ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login success'
@@ -137,6 +145,8 @@ class UserController extends Controller
     public function create()
     {
         //
+
+        return view('Users.Create');
     }
 
     /**
@@ -145,27 +155,36 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'user_name' => 'required',
-            'password' => 'required',
-            'image' => 'required|image'
-        ]);
 
-        $user = User::create([
-            'user_name' => $request->user_name,
-            'hashed_password' => bcrypt($request->password),
-            'Role' => 'E'
-        ]);
+        try {
 
 
-        // make it as jpg
-        $image = imagecreatefromstring(file_get_contents($request->file('image')));
-        imagejpeg($image, storage_path("app/public/faces/{$user->id}.jpeg"));
+            $request->validate([
+                'user_name' => 'required',
+                'password' => 'required',
+                'vector' => 'required'
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User created successfully'
-        ]);
+            User::create([
+                'user_name' => $request->user_name,
+                'hashed_password' => bcrypt($request->password),
+                'role' => 'E',
+                'vector' => json_decode($request->vector, true)
+            ]);
+
+
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully'
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     /**
@@ -181,7 +200,9 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+
+        return view('Users.Edit', compact('user'));
     }
 
     /**
@@ -189,14 +210,46 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
-    }
+        $request->validate([
+            'user_name' => 'required',
+            'password' => 'required'
+        ]);
 
+        $user = User::findOrFail($id);
+
+        $user->update([
+            'user_name' => $request->user_name,
+            'password' => $request->password,
+        ]);
+
+        return redirect('/employees');
+    }
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $user = User::findOrFail($id);
+
+            $user->update([
+                'isDeleted' => true
+            ]);
+
+            return response()->json(['user'=>$user,'message' => 'User Deleted successfully']);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
+    }
+
+
+
+    public function getEmployees()
+    {
+        $emps = User::select()->where('role', 'E')
+        ->where('isDeleted' , false)->get();
+
+
+        return view('Users.Employees', ['emps' => $emps]);
     }
 }

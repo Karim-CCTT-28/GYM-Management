@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SubscriptionType extends Model
 {
-    protected $fillable = ['duration', 'price' , 'duration_unit'];
+    protected $fillable = ['duration', 'price' , 'duration_unit' , 'isDeleted'];
 
     public function subscriptions(): HasMany
     {
