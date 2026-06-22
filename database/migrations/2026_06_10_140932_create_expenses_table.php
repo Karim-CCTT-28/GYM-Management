@@ -21,7 +21,8 @@ return new class extends Migration {
             $table->string("clause");
             $table->float("amount");
 
-            $table->boolean('isDeleted')->default(false);
+            // $table->boolean('isDeleted')->default(false);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

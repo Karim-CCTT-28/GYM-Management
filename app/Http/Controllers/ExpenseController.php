@@ -18,13 +18,14 @@ class ExpenseController extends Controller
 
 
             $request->validate([
-                'user_name' => 'required',
                 'recipient' => 'required',
                 'clause' => 'required',
                 'amount' => 'required|numeric|min:0',
             ]);
 
-            $user = User::where('user_name', $request->user_name)->first();
+
+            // i try to see if User exist or not
+            $user = User::where('id', session('user_id'))->first();
 
             if (!$user) {
                 return response()->json([
@@ -33,6 +34,7 @@ class ExpenseController extends Controller
                 ], 404);
             }
 
+            // get the session report for  user in the current day
             $sessionReport = SessionReport::where('user_id', $user->id)
                 ->whereDate('created_date', Carbon::today())
                 ->first();
@@ -40,14 +42,15 @@ class ExpenseController extends Controller
             if (!$sessionReport) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'No session report found for today'
-                ], 404);
+                    'message' => "the serve didn't make session report for this user ,  
+                                    so you need to call Karim (:"
+                ], 500);
             }
 
 
+            //  i get the balance here , to know if we have enough  money or not
             $net_total = SessionReport::whereDate('created_at', Carbon::today())
                 ->sum('net_total');
-
             if ($request->amount > $net_total) {
                 return response()->json([
                     'status' => false,
@@ -61,7 +64,10 @@ class ExpenseController extends Controller
                 'clause' => $request->clause,
                 'amount' => $request->amount,
             ]);
+
+            // this function calculate the user balance , i use it with incoming and outcoming            
             SessionReportController::updateBalance();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Expense created successfully'
@@ -80,9 +86,9 @@ class ExpenseController extends Controller
 
         try {
 
-            $user_name = session("user_name");
+            $user_id = session("user_id");
 
-            $user = User::where('user_name', $user_name)->first();
+            $user = User::where('id', $user_id)->first();
 
             if (!$user) {
                 return response()->json([
@@ -91,6 +97,7 @@ class ExpenseController extends Controller
                 ], 404);
             }
 
+            // get the session report for  user in the current day
             $sessionReport = SessionReport::where('user_id', $user->id)
                 ->whereDate('created_date', Carbon::today())
                 ->first();
@@ -125,10 +132,14 @@ class ExpenseController extends Controller
     {
         $expense = Expense::findOrFail($id);
 
-        $expense->update([
-            'isDeleted'=>true
-        ]);
+        // soft delete as U want doctor (:
 
+        $expense->delete();
+        // $expense->update([
+        //     'isDeleted' => true
+        // ]);
+
+        // this function calculate the user balance , i use it with incoming and outcoming
         SessionReportController::updateBalance();
         return response()->json([
             'status' => true,
@@ -139,6 +150,8 @@ class ExpenseController extends Controller
 
     public function update(Request $request, $id)
     {
+
+    // just a normal update operation
         $expense = Expense::findOrFail($id);
 
         $request->validate([

@@ -15,7 +15,9 @@ return new class extends Migration {
             $table->string('name');
             $table->string('phone')->unique();
             $table->json('vector');
-            $table->boolean("isDeleted")->default(false);
+            // $table->boolean("isDeleted")->default(false);
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

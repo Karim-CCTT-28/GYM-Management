@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use App\Models\SessionReport;
-use App\Models\Subscription;
-use App\Models\Expense;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Carbon\Carbon;
@@ -88,54 +86,80 @@ class SessionReportController extends Controller implements HasMiddleware
 
     public function setWaterBalance(Request $request)
     {
-        $request->validate([
-            'water_balance' => 'required|numeric'
-        ]);
 
-        $report = SessionReport::whereDate(
-            'created_date',
-            now()->toDateString()
-                ->where('user_id', session('user_id'))
-        )->first();
+        try {
 
-        if (!$report) {
+
+            \Log::info("Working!");
+            $request->validate([
+                'water_balance' => 'required|numeric'
+            ]);
+
+            $report = SessionReport::
+                whereDate('created_date', now()->toDateString())
+                ->where('id', session('user_id'))
+                ->first();
+
+            if (!$report) {
+                return response()->json([
+                    'message' => 'Session report not found'
+                ], 404);
+            }
+
+            $report->update([
+                'water_balance' => $request->water_balance
+            ]);
+
             return response()->json([
-                'message' => 'Session report not found'
-            ], 404);
+                'message' => 'Water balance updated successfully',
+                'water_balance' => $report->water_balance
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ],500);
         }
-
-        $report->update([
-            'water_balance' => $request->water_balance
-        ]);
-
-        return response()->json([
-            'message' => 'Water balance updated successfully',
-            'water_balance' => $report->water_balance
-        ]);
     }
 
     public static function updateBalance()
     {
+
+        // this function calculate the user balance , i use it with incoming & outcoming
+
+
+
+        //     SELECT 
+        //     SUM(subscription_types.price) AS subscriptions_balance
+        // FROM 
+        //     `subscriptions`
+        // INNER JOIN 
+        //     `subscription_types` ON `subscriptions`.`subscription_type_id` = `subscription_types`.`id`
+        // INNER JOIN 
+        //     `session_reports` ON `subscriptions`.`session_report_id` = `session_reports`.`id`
+        // WHERE 
+        //     DATE(`subscriptions`.`created_at`) = CURDATE()         
+        //     AND `session_reports`.`user_id` = 1;        
+
         $subscriptionsBalance = \DB::table('subscriptions')
             ->join('subscription_types', 'subscriptions.subscription_type_id', '=', 'subscription_types.id')
             ->join('session_reports', 'subscriptions.session_report_id', '=', 'session_reports.id')
-            ->whereDate('subscriptions.created_at', \Carbon\Carbon::today())
+            ->whereDate('subscriptions.created_at', Carbon::today())
             ->where('session_reports.user_id', session("user_id"))
             ->sum('subscription_types.price');
 
         $expenses = \DB::table('expenses')
             ->join('session_reports', 'expenses.session_report_id', '=', 'session_reports.id')
-            ->whereDate('expenses.created_at', \Carbon\Carbon::today())
+            ->whereDate('expenses.created_at', Carbon::today())
             ->where('session_reports.user_id', session("user_id"))
             ->sum('expenses.amount');
 
-        $water_balance = SessionReport::whereDate('created_date', \Carbon\Carbon::today())
+        $water_balance = SessionReport::whereDate('created_date', Carbon::today())
             ->where('user_id', session("user_id"))
             ->sum('water_balance');
 
         $net_total = $subscriptionsBalance + $water_balance - $expenses;
 
-        SessionReport::whereDate('created_date', \Carbon\Carbon::today())
+        SessionReport::whereDate('created_date', Carbon::today())
             ->where('user_id', session("user_id"))
             ->update([
                 'net_total' => $net_total

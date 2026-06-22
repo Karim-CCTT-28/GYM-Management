@@ -25,8 +25,8 @@ return new class extends Migration {
             $table->integer('duration');
             $table->string('duration_unit');
             $table->float('price');
-            $table->boolean('isDeleted')->default(false);
-
+            // $table->boolean('isDeleted')->default(false);
+            $table->softDeletes();
             $table->unique(['duration', 'duration_unit']);
             $table->timestamps();
         });

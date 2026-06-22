@@ -97,6 +97,7 @@ def subscriberFace(file , subscribers):
 
 
         start = time.perf_counter()
+        
         current_vector = DeepFace.represent(
             img_path=file,  
             model_name="ArcFace",

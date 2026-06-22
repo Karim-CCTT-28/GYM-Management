@@ -1,3 +1,3 @@
-Hello
+### My Shema
 
-run :php artisan migrate:seed
+![[drawSQL-image-export-2026-06-22 1.webp]]

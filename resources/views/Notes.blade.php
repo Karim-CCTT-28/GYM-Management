@@ -192,16 +192,15 @@
             let id = document.getElementById('note_id').value;
             let note = document.getElementById('note_text').value;
 
-            let url = '/notes';
-            let method = 'POST';
+           
 
             if (id) {
                 url = `/notes/${id}`;
                 method = 'PUT';
             }
 
-            let response = await fetch(url, {
-                method: method,
+            let response = await fetch("/notes", {
+                method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -215,6 +214,10 @@
 
             if (result.status) {
                 location.reload();
+            }
+            else{
+                alert(result.message);
+                
             }
         });
 
@@ -234,7 +237,6 @@
             });
         });
 
-        // حذف الملاحظة
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', async function () {
                 if (!confirm('Are you sure you want to delete this note?')) return;

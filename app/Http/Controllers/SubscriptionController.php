@@ -60,9 +60,8 @@ class SubscriptionController extends Controller implements HasMiddleware
 
 
             $request->validate([
-                'user' => 'required',
-                'subscriber_id' => 'required|exists:subscribers,id',
-                'subscription_type_id' => 'required|exists:subscription_types,id',
+                'subscriber_id' => 'required',
+                'subscription_type_id' => 'required',
                 'start_date' => 'required|date',
             ]);
 
@@ -106,11 +105,12 @@ class SubscriptionController extends Controller implements HasMiddleware
                 'subscription_type_id' => $type->id,
                 'start_date' => $request->start_date,
                 'end_date' => $endDate->format('Y-m-d'),
-                'created_by' => session('user_name') ?? 'System',
+                'created_by' => session('user_name') ,
                 'session_report_id' => $session->id
             ]);
 
             SessionReportController::updateBalance();
+            
             return response()->json([
                 'success' => true,
             ], 200);

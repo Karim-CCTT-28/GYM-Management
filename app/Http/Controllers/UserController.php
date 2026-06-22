@@ -250,9 +250,10 @@ class UserController extends Controller implements HasMiddleware
         try {
             $user = User::findOrFail($id);
 
-            $user->update([
-                'isDeleted' => true
-            ]);
+            $user->delete();
+            // $user->update([
+            //     'isDeleted' => true
+            // ]);
 
             return response()->json(['user'=>$user,'message' => 'User Deleted successfully']);
         } catch (\Throwable $e) {
@@ -265,7 +266,7 @@ class UserController extends Controller implements HasMiddleware
     public function getEmployees()
     {
         $emps = User::select()->where('role', 'E')
-        ->where('isDeleted' , false)->get();
+        ->get();
 
 
         return view('Users.Employees', ['emps' => $emps]);

@@ -14,6 +14,7 @@ class NoteController extends Controller implements HasMiddleware
 
 
 
+
     public static function middleware(): array
     {
 
@@ -44,16 +45,20 @@ class NoteController extends Controller implements HasMiddleware
     public function readAll()
     {
 
-        $notes = Note::with('user')->where('isDeleted', false)->get();
+        // it's used by admin only
+        $notes = Note::with('user')->get();
 
         // return response()->json($notes);
         return view('ReadNotes', ['notes' => $notes]);
     }
     public function index()
     {
+
+        // show employee's notes
         $notes = Note::where('user_id', session('user_id'))
             ->whereDate('created_at', Carbon::today())
             ->get();
+
 
         // return response()->json(['n' => $notes]);
         return view('Notes', compact('notes'));
@@ -61,19 +66,28 @@ class NoteController extends Controller implements HasMiddleware
 
     public function store(Request $request)
     {
-        $request->validate([
-            'note' => 'required'
-        ]);
+        try {
 
-        $note = Note::create([
-            'user_id' => session('user_id'),
-            'note' => $request->note
-        ]);
 
-        return response()->json([
-            'status' => true,
-            'data' => $note
-        ]);
+            $request->validate([
+                'note' => 'required'
+            ]);
+
+            $note = Note::create([
+                'user_id' => session('user_id'),
+                'note' => $request->note
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'data' => $note
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'data' => $e->getMessage()
+            ]);
+        }
     }
 
     public function show($id)
@@ -114,9 +128,11 @@ class NoteController extends Controller implements HasMiddleware
             ->whereDate('created_at', Carbon::today())
             ->firstOrFail();
 
-        $note->update([
-            'isDeleted' => true
-        ]);
+
+        $note->delete();
+        // $note->update([
+        //     'isDeleted' => true
+        // ]);
 
         return response()->json([
             'status' => true,

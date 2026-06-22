@@ -19,7 +19,9 @@ return new class extends Migration
             $table->json('vector');
             $table->timestamps();
 
-            $table->boolean('isDeleted')->default(false);
+            // $table->boolean('isDeleted')->default(false);
+
+            $table->softDeletes();
         });
     }
 

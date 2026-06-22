@@ -3,8 +3,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('notes', function (Blueprint $table) {
@@ -15,10 +14,10 @@ return new class extends Migration
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users');
-                
 
-            $table->boolean('isDeleted')->default(false);    
 
+            // $table->boolean('isDeleted')->default(false);    
+            $table->softDeletes();
             $table->text('note');
 
             $table->timestamps();

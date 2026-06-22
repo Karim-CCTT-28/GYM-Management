@@ -57,6 +57,7 @@ class SubscriberController extends Controller implements HasMiddleware
         }
         try {
 
+        // here laravel makes a left join to get check in with its subsc
             $checkInsToday = CheckIn::with('subscriber:id,name')
                 ->select('id', 'subscriber_id', 'is_allow', 'created_at', 'check_in_date')
                 ->whereDate('check_in_date', Carbon::today())
@@ -144,6 +145,16 @@ class SubscriberController extends Controller implements HasMiddleware
 
             $today = now()->toDateString();
 
+
+
+            // $hasActiveSubscription = Subscription::where('subscriber_id', $sub->id)
+            // ->where('start_date', '<=', $today)
+            // ->where('end_date', '>=', $today)
+            // ->exists();
+
+            // this method is more faster 
+
+            
             $hasActiveSubscription = \DB::table('subscriptions')
                 ->where('subscriber_id', $sub->id)
                 ->where('start_date', '<=', $today)
@@ -221,8 +232,7 @@ class SubscriberController extends Controller implements HasMiddleware
         $search = $request->query('search');
         if ($search) {
 
-            $subscribers = Subscriber::where('isDeleted', false)
-                ->where(function ($query) use ($search) {
+            $subscribers = Subscriber::where(function ($query) use ($search) {
                     $query->where('name', 'LIKE', "%{$search}%")
                         ->orWhere('phone', 'LIKE', "%{$search}%");
                 })
@@ -231,8 +241,7 @@ class SubscriberController extends Controller implements HasMiddleware
             return response()->json($subscribers);
         } else {
 
-            $subscribers = Subscriber::select("id", "name", "phone")->orderBy("id", "desc")
-                ->where('isDeleted', false)->get();
+            $subscribers = Subscriber::select("id", "name", "phone")->orderBy("id", "desc")->get();
 
             return view('Subscribers.Index', compact("subscribers"));
         }
@@ -341,9 +350,11 @@ class SubscriberController extends Controller implements HasMiddleware
 
             $s = Subscriber::findOrFail($id);
 
-            $s->update([
-                'isDeleted' => true
-            ]);
+
+            $s->delete();
+            // $s->update([
+            //     'isDeleted' => true
+            // ]);
 
             SessionReportController::updateBalance();
             return response()->json([

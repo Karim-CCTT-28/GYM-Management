@@ -31,8 +31,7 @@ class SubscriptionTypesController extends Controller implements HasMiddleware
     }
     public function index(Request $request)
     {
-        $types = SubscriptionType::select('id', 'duration', 'price', 'duration_unit')
-            ->where('isDeleted', false)->get();
+        $types = SubscriptionType::select('id', 'duration', 'price', 'duration_unit')->get();
         if ($request->has('q')) {
             return view("SubscriptionTypes.Index", ['types' => $types]);
         }
@@ -59,9 +58,10 @@ class SubscriptionTypesController extends Controller implements HasMiddleware
         try {
             $type = SubscriptionType::findOrFail($id);
 
-            $type->update([
-                'isDeleted' => true
-            ]);
+            $type->delete();
+            // $type->update([
+            //     'isDeleted' => true
+            // ]);
 
             return response()->json([
                 'status' => 'success',
@@ -92,8 +92,7 @@ class SubscriptionTypesController extends Controller implements HasMiddleware
             SubscriptionType::create([
                 'duration' => $request->duration,
                 'duration_unit' => $request->duration_unit,
-                'price' => $request->price,
-                'isDeleted' => false,
+                'price' => $request->price
             ]);
 
 
